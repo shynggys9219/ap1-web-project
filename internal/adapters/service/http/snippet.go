@@ -8,7 +8,11 @@ import (
 	"text/template"
 )
 
-func Home(w http.ResponseWriter, r *http.Request) {
+type Snippet struct {
+	uc SnippetUsecase
+}
+
+func (uc Snippet) Home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return

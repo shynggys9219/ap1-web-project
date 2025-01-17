@@ -1,19 +1,19 @@
 package app
 
-import "net/http"
+import (
+	"github.com/shynggys9219/ap1-web-project/internal/adapters/service"
+)
 
 const (
 	addr = ":9000"
 )
 
 type App struct {
-	HttpServer *http.ServeMux
-	FileServer http.Handler
+	SimpleServer *service.SimpleServer
 }
 
-func New() App {
+func New(server *service.SimpleServer) App {
 	return App{
-		HttpServer: http.NewServeMux(),
-		FileServer: http.FileServer(http.Dir("./ui/static/")),
+		SimpleServer: server,
 	}
 }

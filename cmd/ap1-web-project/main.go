@@ -1,24 +1,36 @@
 package main
 
 import (
-	handler "github.com/shynggys9219/ap1-web-project/internal/adapters/http"
+	"context"
+	"github.com/shynggys9219/ap1-web-project/internal/adapters/postgres"
+	"github.com/shynggys9219/ap1-web-project/internal/adapters/service"
 	"github.com/shynggys9219/ap1-web-project/internal/app"
+	"github.com/shynggys9219/ap1-web-project/internal/usecase"
+	"github.com/shynggys9219/ap1-web-project/pkg"
 	"log"
-	"net/http"
 )
 
 func main() {
-	application := app.New()
-	application.HttpServer.HandleFunc("/", handler.Home)
-	application.HttpServer.HandleFunc("/snippet", handler.GetSnippet)
-	application.HttpServer.HandleFunc("/snippet/create", handler.CreateSnippet)
-	application.HttpServer.HandleFunc("/snippet/update", handler.UpdateSnippet)
-	application.HttpServer.HandleFunc("/snippet/delete", handler.DeleteSnippet)
+	ctx := context.Background()
+	db, err := pkg.NewDB(ctx, pkg.Config{
+		Database: "snippetbox",
+		Host:     "localhost",
+		Port:     5432,
+		Username: "postgres",
+		Password: "postgres",
+	})
+	defer db.Conn.Close(ctx)
+	if err != nil {
+		panic(err)
+	}
+	snippetRepo := postgres.NewSnippet(db.Conn)
+	snippetUsecase := usecase.NewSnippet(snippetRepo)
 
-	application.HttpServer.Handle("/static/", http.StripPrefix("/static", application.FileServer))
+	server := service.NewSimpleServer(snippetUsecase)
+	application := app.New(server)
 
 	log.Println("starting the server on :9000")
 
-	err := http.ListenAndServe(":9000", application.HttpServer)
+	application.SimpleServer.Run(ctx)
 	log.Fatalf("error occured during the server start: %v", err)
 }

@@ -1,6 +1,11 @@
 package model
 
+import "time"
+
 type Snippet struct {
-	ID   uint64
-	Name string
+	ID      int
+	Title   string
+	Content string
+	Created time.Time
+	Expires time.Time
 }
