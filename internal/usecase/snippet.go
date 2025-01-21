@@ -13,11 +13,11 @@ func NewSnippet(snippetRepo SnippetRepo) *Snippet {
 }
 
 func (uc *Snippet) Create(title, content, expires string) (int, error) {
-	return uc.snippetRepo.Create("test", "content", "1")
+	return uc.snippetRepo.Create(title, content, expires)
 }
 
 func (uc *Snippet) Get(id int) (*model.Snippet, error) {
-	return nil, nil
+	return uc.snippetRepo.Get(id)
 }
 func (uc *Snippet) Update(id int) (*model.Snippet, error) {
 	return nil, nil
@@ -26,5 +26,5 @@ func (uc *Snippet) Delete(id int) (*model.Snippet, error) {
 	return nil, nil
 }
 func (uc *Snippet) Latest() ([]*model.Snippet, error) {
-	return nil, nil
+	return uc.snippetRepo.Latest()
 }

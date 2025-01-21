@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/shynggys9219/ap1-web-project/internal/adapters/http"
 	"github.com/shynggys9219/ap1-web-project/internal/adapters/postgres"
-	"github.com/shynggys9219/ap1-web-project/internal/adapters/service"
 	"github.com/shynggys9219/ap1-web-project/internal/app"
 	"github.com/shynggys9219/ap1-web-project/internal/usecase"
 	"github.com/shynggys9219/ap1-web-project/pkg"
@@ -26,7 +26,7 @@ func main() {
 	snippetRepo := postgres.NewSnippet(db.Conn)
 	snippetUsecase := usecase.NewSnippet(snippetRepo)
 
-	server := service.NewSimpleServer(snippetUsecase)
+	server := http.NewSimpleServer(snippetUsecase)
 	application := app.New(server)
 
 	log.Println("starting the server on :9000")

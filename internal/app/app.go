@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/shynggys9219/ap1-web-project/internal/adapters/service"
+	"github.com/shynggys9219/ap1-web-project/internal/adapters/http"
 )
 
 const (
@@ -9,10 +9,10 @@ const (
 )
 
 type App struct {
-	SimpleServer *service.SimpleServer
+	SimpleServer *http.SimpleServer
 }
 
-func New(server *service.SimpleServer) App {
+func New(server *http.SimpleServer) App {
 	return App{
 		SimpleServer: server,
 	}
