@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
-
 	pg "github.com/jackc/pgx/v5"
 	"github.com/shynggys9219/ap1-web-project/internal/model"
 )
@@ -26,20 +24,17 @@ func NewSnippet(conn *pg.Conn) *Snippet {
 func (m *Snippet) Create(title, content, expires string) (int, error) {
 	ctx := context.Background()
 	stmt := `INSERT INTO snippets (title, content, created, expires)
-VALUES($1, $2, CURRENT_TIMESTAMP, CURRENT_DATE + $3 * INTERVAL '1 day')`
+VALUES($1, $2, CURRENT_TIMESTAMP, CURRENT_DATE + $3 * INTERVAL '1 day') RETURNING id`
 
-	rows, err := m.DB.Query(ctx, stmt, title, content, expires)
+	var id int
+	err := m.DB.QueryRow(ctx, stmt, title, content, expires).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
 
-	defer rows.Close()
-
-	log.Println(rows.Values())
-
 	// The ID returned has the type int64, so we convert it to an int type
 	// before returning.
-	return 1, nil
+	return id, nil
 
 }
 

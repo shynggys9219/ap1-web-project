@@ -9,3 +9,10 @@ type SnippetUsecase interface {
 	Delete(id int) (*model.Snippet, error)
 	Latest() ([]*model.Snippet, error)
 }
+
+type AuthUsecase interface {
+	Create(user model.User) (int, error)
+	Get(id int) (*model.User, error)
+	Update(id int) (*model.User, error)
+	Delete(id int) error
+}

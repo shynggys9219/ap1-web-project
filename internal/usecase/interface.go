@@ -9,3 +9,10 @@ type SnippetRepo interface {
 	Delete(id int) (*model.Snippet, error)
 	Latest() ([]*model.Snippet, error)
 }
+
+type AuthRepo interface {
+	Create(user model.User) (int, error)
+	Get(id int) (*model.User, error)
+	Update(id int) (*model.Snippet, error)
+	Delete(id int) error
+}

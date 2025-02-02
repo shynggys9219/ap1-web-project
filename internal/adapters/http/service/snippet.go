@@ -2,21 +2,26 @@ package service
 
 import (
 	"fmt"
+	"github.com/golangcollege/sessions"
 	"github.com/gorilla/mux"
 	"github.com/shynggys9219/ap1-web-project/internal/adapters/http/service/templates"
+	"github.com/shynggys9219/ap1-web-project/internal/model"
 	"html/template"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type Snippet struct {
-	uc SnippetUsecase
+	uc      SnippetUsecase
+	session *sessions.Session
 }
 
-func NewSnippet(uc SnippetUsecase) *Snippet {
+func NewSnippet(uc SnippetUsecase, session *sessions.Session) *Snippet {
 	return &Snippet{
-		uc: uc,
+		uc:      uc,
+		session: session,
 	}
 }
 
@@ -71,22 +76,62 @@ func (s *Snippet) CreateSnippet(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
+
 		return
 	}
-	// Use the r.PostForm.Get() method to retrieve the relevant data fields
-	// from the r.PostForm map.
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
-	expires := r.PostForm.Get("expires")
 
-	id, err := s.uc.Create(title, content, expires)
+	errorsMap := make(map[string]string)
+
+	expiry, err := strconv.Atoi(r.PostForm.Get("expires"))
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
+		return
+	}
+	snippet := model.Snippet{
+		Title:   r.PostForm.Get("title"),
+		Content: r.PostForm.Get("content"),
+		Created: time.Time{},
+		Expires: time.Now().UTC().Add(time.Duration(24*expiry) * time.Hour),
+	}
+
+	snippet.Validate(errorsMap)
+	if len(errorsMap) > 0 {
+		files := []string{
+			"./ui/html/create.page.tmpl",
+			"./ui/html/base.layout.tmpl",
+		}
+
+		ts, templateError := template.ParseFiles(files...)
+		if templateError != nil {
+			log.Println(err.Error())
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
+		err = ts.Execute(
+			w,
+			&templates.TemplateData{
+				FormErrors: errorsMap,
+				FormData:   r.PostForm,
+			})
+		if err != nil {
+			log.Println(err.Error())
+			http.Error(w, "Internal Server Error", 500)
+		}
+
+		return
+	}
+
+	id, err := s.uc.Create(snippet.Title, snippet.Content, r.PostForm.Get("expires"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("internal error"), http.StatusInternalServerError)
 
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
+	s.session.Put(r, "flash", "Snippet successfully created!")
+
+	http.Redirect(w, r, fmt.Sprintf("/snippet/%d", id), http.StatusSeeOther)
 }
 
 func UpdateSnippet(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +150,11 @@ func (s *Snippet) GetSnippet(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%v", err.Error())
 		return
 	}
-	data := templates.TemplateData{Snippet: snippet}
+	flash := s.session.PopString(r, "flash")
+	data := templates.TemplateData{
+		Snippet: snippet,
+		Flash:   flash,
+	}
 	files := []string{
 		"./ui/html/show.page.tmpl",
 		"./ui/html/base.layout.tmpl",

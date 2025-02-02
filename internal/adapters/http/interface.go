@@ -7,3 +7,7 @@ import (
 type SnippetUsecase interface {
 	service.SnippetUsecase
 }
+
+type AuthUsecase interface {
+	service.AuthUsecase
+}

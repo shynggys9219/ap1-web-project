@@ -1,6 +1,8 @@
 package usecase
 
-import "github.com/shynggys9219/ap1-web-project/internal/model"
+import (
+	"github.com/shynggys9219/ap1-web-project/internal/model"
+)
 
 type Snippet struct {
 	snippetRepo SnippetRepo

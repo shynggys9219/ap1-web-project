@@ -26,7 +26,10 @@ func main() {
 	snippetRepo := postgres.NewSnippet(db.Conn)
 	snippetUsecase := usecase.NewSnippet(snippetRepo)
 
-	server := http.NewSimpleServer(snippetUsecase)
+	authRepo := postgres.NewAuth(db.Conn)
+	authUsecase := usecase.NewAuth(authRepo)
+
+	server := http.NewSimpleServer(snippetUsecase, authUsecase)
 	application := app.New(server)
 
 	log.Println("starting the server on :9000")
